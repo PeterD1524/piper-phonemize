@@ -10,6 +10,8 @@ project(
     LANGUAGES CXX
 )
 
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+
 if(MSVC)
     # Force compiler to use UTF-8 for IPA constants
     add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
@@ -24,7 +26,7 @@ elseif(NOT APPLE)
 endif()
 
 add_library(
-    piper_phonemize SHARED
+    piper_phonemize
     src/phonemize.cpp
     src/phoneme_ids.cpp
     src/tashkeel.cpp
