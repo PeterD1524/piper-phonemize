@@ -1,0 +1,10 @@
+diff --git a/src/ucd-tools/CMakeLists.txt b/src/ucd-tools/CMakeLists.txt
+index 2050c114..4bd7d17e 100644
+--- a/src/ucd-tools/CMakeLists.txt
++++ b/src/ucd-tools/CMakeLists.txt
+@@ -1,4 +1,4 @@
+-add_library(ucd STATIC
++add_library(ucd OBJECT
+   src/case.c
+   src/categories.c
+   src/ctype.c
