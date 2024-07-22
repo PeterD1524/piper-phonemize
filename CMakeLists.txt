@@ -40,12 +40,33 @@ set_target_properties(piper_phonemize PROPERTIES
 
 # ---- onnxruntime ---
 
-# Look for onnxruntime files in <root>/lib
-if(NOT DEFINED ONNXRUNTIME_DIR)
-    if(NOT DEFINED ONNXRUNTIME_VERSION)
-        set(ONNXRUNTIME_VERSION "1.14.1")
-    endif()
+set(onnxruntime_FOUND FALSE)
 
+if(NOT DEFINED ONNXRUNTIME_VERSION)
+    set(ONNXRUNTIME_VERSION "1.14.1")
+endif()
+
+if(NOT onnxruntime_FOUND AND NOT DEFINED ONNXRUNTIME_DIR)
+    find_package(onnxruntime "${ONNXRUNTIME_VERSION}")
+    if(onnxruntime_FOUND)
+        list(APPEND ONNXRUNTIME_LINK_LIBRARIES "onnxruntime::onnxruntime")
+    endif()
+endif()
+
+if(NOT onnxruntime_FOUND AND NOT DEFINED ONNXRUNTIME_DIR)
+    find_library(ONNXRUNTIME_LIBRARY onnxruntime)
+    if(NOT "${ONNXRUNTIME_LIBRARY}" STREQUAL "ONNXRUNTIME_LIBRARY-NOTFOUND")
+        find_path(ONNXRUNTIME_PATH "onnxruntime_cxx_api.h" PATH_SUFFIXES "onnxruntime")
+        if(NOT "${ONNXRUNTIME_PATH}" STREQUAL "ONNXRUNTIME_PATH-NOTFOUND")
+            list(APPEND ONNXRUNTIME_INCLUDE_DIRECTORIES "${ONNXRUNTIME_PATH}")
+            list(APPEND ONNXRUNTIME_LINK_LIBRARIES "${ONNXRUNTIME_LIBRARY}")
+            set(onnxruntime_FOUND TRUE)
+        endif()
+    endif()
+endif()
+
+# Look for onnxruntime files in <root>/lib
+if(NOT onnxruntime_FOUND AND NOT DEFINED ONNXRUNTIME_DIR)
     if(WIN32)
         # Windows x86-64
         set(ONNXRUNTIME_PREFIX "onnxruntime-win-x64-${ONNXRUNTIME_VERSION}")
@@ -99,6 +120,13 @@ if(NOT DEFINED ONNXRUNTIME_DIR)
     endif()
 endif()
 
+if(NOT onnxruntime_FOUND AND DEFINED ONNXRUNTIME_DIR)
+    list(APPEND ONNXRUNTIME_INCLUDE_DIRECTORIES "${ONNXRUNTIME_DIR}/include")
+    list(APPEND ONNXRUNTIME_LINK_DIRECTORIES "${ONNXRUNTIME_DIR}/lib")
+    list(APPEND ONNXRUNTIME_LINK_LIBRARIES "onnxruntime")
+    set(onnxruntime_FOUND TRUE)
+endif()
+
 # ---- espeak-ng ---
 
 if(NOT DEFINED ESPEAK_NG_DIR)
@@ -137,19 +165,19 @@ target_include_directories(
     piper_phonemize PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>"
     ${ESPEAK_NG_DIR}/include
-    ${ONNXRUNTIME_DIR}/include
+    ${ONNXRUNTIME_INCLUDE_DIRECTORIES}
 )
 
 target_link_directories(
     piper_phonemize PUBLIC
     ${ESPEAK_NG_DIR}/lib
-    ${ONNXRUNTIME_DIR}/lib
+    ${ONNXRUNTIME_LINK_DIRECTORIES}
 )
 
 target_link_libraries(
     piper_phonemize
     espeak-ng
-    onnxruntime
+    ${ONNXRUNTIME_LINK_LIBRARIES}
 )
 
 target_compile_features(piper_phonemize PUBLIC cxx_std_17)
@@ -236,10 +264,12 @@ install(
     DIRECTORY ${ESPEAK_NG_DIR}/
     DESTINATION ${CMAKE_INSTALL_PREFIX})
 
-install(
-    DIRECTORY ${ONNXRUNTIME_DIR}/include/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+if(DEFINED ONNXRUNTIME_DIR)
+    install(
+        DIRECTORY ${ONNXRUNTIME_DIR}/include/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-install(
-    DIRECTORY ${ONNXRUNTIME_DIR}/lib/
-    DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(
+        DIRECTORY ${ONNXRUNTIME_DIR}/lib/
+        DESTINATION ${CMAKE_INSTALL_LIBDIR})
+endif()
