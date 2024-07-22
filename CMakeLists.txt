@@ -161,11 +161,15 @@ endif()
 
 # ---- Declare library ----
 
+set(PIPER_PHONEMIZE_INTERFACE_INCLUDE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/include")
+file(COPY "src/" DESTINATION "${PIPER_PHONEMIZE_INTERFACE_INCLUDE_DIRECTORY}/piper-phonemize" FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp")
+
 target_include_directories(
     piper_phonemize PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>"
     ${ESPEAK_NG_DIR}/include
     ${ONNXRUNTIME_INCLUDE_DIRECTORIES}
+    INTERFACE "${PIPER_PHONEMIZE_INTERFACE_INCLUDE_DIRECTORY}"
 )
 
 target_link_directories(
@@ -245,7 +249,7 @@ install(
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 install(
-    DIRECTORY ${CMAKE_SOURCE_DIR}/src/
+    DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/"
     DESTINATION include/piper-phonemize
     FILES_MATCHING
     PATTERN "*.h"
@@ -256,7 +260,7 @@ install(
     ARCHIVE DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(
-    FILES ${CMAKE_SOURCE_DIR}/etc/libtashkeel_model.ort
+    FILES "${CMAKE_CURRENT_SOURCE_DIR}/etc/libtashkeel_model.ort"
     TYPE DATA)
 
 # Dependencies
