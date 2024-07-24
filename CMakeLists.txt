@@ -215,7 +215,6 @@ target_link_libraries(piper_phonemize_exe PUBLIC
 # ---- Declare test ----
 
 include(CTest)
-enable_testing()
 add_executable(test_piper_phonemize src/test.cpp src/phoneme_ids.cpp)
 add_test(
     NAME test_piper_phonemize
