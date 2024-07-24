@@ -216,10 +216,12 @@ target_link_libraries(piper_phonemize_exe PUBLIC
 
 include(CTest)
 add_executable(test_piper_phonemize src/test.cpp src/phoneme_ids.cpp)
-add_test(
-    NAME test_piper_phonemize
-    COMMAND test_piper_phonemize "${ESPEAK_NG_DIR}/share/espeak-ng-data" "${CMAKE_SOURCE_DIR}/etc/libtashkeel_model.ort"
-)
+if(BUILD_TESTING)
+    add_test(
+        NAME test_piper_phonemize
+        COMMAND test_piper_phonemize "${ESPEAK_NG_DIR}/share/espeak-ng-data" "${CMAKE_SOURCE_DIR}/etc/libtashkeel_model.ort"
+    )
+endif()
 
 target_compile_features(test_piper_phonemize PUBLIC cxx_std_17)
 
